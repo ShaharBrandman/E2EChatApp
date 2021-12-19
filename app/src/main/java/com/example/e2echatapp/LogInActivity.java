@@ -1,31 +1,29 @@
 package com.example.e2echatapp;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.text.method.PasswordTransformationMethod;
-import android.text.method.SingleLineTransformationMethod;
-import android.text.method.TransformationMethod;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class LogInActivity extends AppCompatActivity {
 
     private static final String TAG = "LogInActivity";
     
-    private static EditText username, phoneNumber, password;
-    private static Button continueBtn;
+    private static EditText email, emailPassword;
+    private static Button signIn, signUp;
+
+    private static FirebaseAuth auth = FirebaseAuth.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,10 +32,48 @@ public class LogInActivity extends AppCompatActivity {
 
         setTitle("Login to your account");
 
-        username = findViewById(R.id.username);
-        phoneNumber = findViewById(R.id.phoneNumber);
-        password = findViewById(R.id.password);
+        email = findViewById(R.id.email);
+        emailPassword = findViewById(R.id.emailPassword);
 
-        continueBtn = findViewById(R.id.continueBtn);
+        signIn = findViewById(R.id.continueSignIn);
+        signUp = findViewById(R.id.continueSignUp);
+
+        signIn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                auth.signInWithEmailAndPassword(email.getText().toString(), emailPassword.getText().toString())
+                        .addOnCompleteListener(LogInActivity.this, new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (task.isSuccessful()) {
+                                    Log.d(TAG, "signInWithEmail: success");
+                                    startActivity(new Intent(LogInActivity.this, ContactsActivity.class));
+                                } else {
+                                    Log.w(TAG, "signInWithEmail: failure", task.getException());
+                                    Toast.makeText(LogInActivity.this, "Email or password is wrong!", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+            }
+        });
+
+        signUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                auth.createUserWithEmailAndPassword(email.getText().toString(), emailPassword.getText().toString())
+                        .addOnCompleteListener(LogInActivity.this, new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (task.isSuccessful()) {
+                                    Log.d(TAG, "createdUsernWithEmail: success");
+                                    startActivity(new Intent(LogInActivity.this, ContactsActivity.class));
+                                } else {
+                                    Log.w(TAG, "createdUserWithEmail: failure", task.getException());
+                                    Toast.makeText(LogInActivity.this, "Email or password is wrong!", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+            }
+        });
     }
 }

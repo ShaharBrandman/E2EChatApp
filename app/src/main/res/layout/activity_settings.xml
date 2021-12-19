@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SettingsActivity">
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/changeProfilePicTv"
+        android:text="BACK"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="5dp"
+        android:layout_marginBottom="50dp"
+        android:id="@+id/goBackButton"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/emailTv"
+        android:layout_above="@id/changeProfilePicTv"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="5dp"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Click to change profile picture"
+        android:id="@+id/changeProfilePicTv"
+        android:layout_above="@id/profilePic"
+        android:layout_centerInParent="true"
+        android:layout_margin="10dp"
+        android:textColor="@color/colorPrimaryDark"
+        />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/profilePic"
+        android:layout_centerInParent="true"
+        android:src="@drawable/ic_launcher_background"
+        android:layout_above="@id/btnLayout"
+        android:layout_marginBottom="50dp"
+        />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnLayout"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="15dp"
+        android:orientation="horizontal"
+        >
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/deleteUser"
+            android:text="DELETE USER"
+            />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/saveChanges"
+            android:text="SAVE CHANGES"
+            />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/signOut"
+            android:text="SIGN OUT"
+            />
+    </LinearLayout>
+</RelativeLayout>

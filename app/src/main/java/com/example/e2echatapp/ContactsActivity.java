@@ -1,11 +1,14 @@
 package com.example.e2echatapp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -18,21 +21,42 @@ import java.util.ArrayList;
 
 public class ContactsActivity extends AppCompatActivity {
 
+    private static final String TAG = "ContactsActivity";
+    
     private ListView listview;
+    private Button settingsButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts);
+        getSupportActionBar().hide();
 
-        ArrayList<Contact> contacts = new ArrayList<Contact>();
+        final ArrayList<Contact> contacts = new ArrayList<Contact>();
         contacts.add(new Contact("ShaharBrandman", "PP", "16:00", R.drawable.ic_launcher_background));
 
         ContactsAdapter adapter = new ContactsAdapter(this, contacts);
 
         listview = findViewById(R.id.contactsListView);
+        settingsButton = findViewById(R.id.settingsButton);
 
         listview.setAdapter(adapter);
+
+        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent intent = new Intent(ContactsActivity.this, ChatActivity.class);
+                intent.putExtra("contact", contacts.get(i).getContact());
+                startActivity(intent);
+            }
+        });
+
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(ContactsActivity.this, SettingsActivity.class));
+            }
+        });
     }
 
     private class ContactsAdapter extends ArrayAdapter<Contact> {
