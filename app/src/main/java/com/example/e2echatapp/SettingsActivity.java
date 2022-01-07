@@ -13,7 +13,7 @@ import com.google.firebase.auth.FirebaseAuth;
 public class SettingsActivity extends AppCompatActivity {
 
     private Button goBack, signOut, deleteUser;
-    private TextView emailTv;
+    private TextView emailTv, userId;
     private FirebaseAuth auth = FirebaseAuth.getInstance();
 
     @Override
@@ -27,6 +27,9 @@ public class SettingsActivity extends AppCompatActivity {
         deleteUser = findViewById(R.id.deleteUser);
 
         emailTv = findViewById(R.id.emailTv);
+        userId = findViewById(R.id.userId);
+
+        userId.setText(auth.getCurrentUser().getUid());
 
         emailTv.setText(auth.getCurrentUser().getEmail());
 

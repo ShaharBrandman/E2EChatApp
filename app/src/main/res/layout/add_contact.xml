@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <GridLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/grid"
+        android:layout_centerInParent="true"
+        android:columnCount="2"
+        >
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="Contact's UserID:"
+            android:textColor="@color/colorPrimaryDark"
+            android:layout_marginRight="15dp"
+            />
+
+        <EditText
+            android:id="@+id/userId"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:hint="Enter Some userID"
+            android:maxLines="1"
+            />
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="Contact's Username:"
+            android:textColor="@color/colorPrimaryDark"
+            android:layout_marginRight="15dp"
+            />
+
+        <EditText
+            android:id="@+id/username"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:hint="Pick a username"
+            android:maxLines="1"
+            />
+
+    </GridLayout>
+
+    <Button
+        android:id="@+id/AddContactBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/grid"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"
+        android:text="Add contact"
+        />
+
+</RelativeLayout>

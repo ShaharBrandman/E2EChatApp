@@ -9,12 +9,31 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/changeProfilePicTv"
+        android:layout_above="@id/userIdTv"
         android:text="BACK"
         android:layout_alignParentLeft="true"
         android:layout_marginLeft="5dp"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="60dp"
         android:id="@+id/goBackButton"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/userIdTv"
+        android:text="User ID:"
+        android:layout_above="@id/userId"
+        android:layout_centerInParent="true"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/userId"
+        android:layout_above="@id/emailTv"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="1dp"
+        android:textIsSelectable="true"
         />
 
     <TextView
@@ -23,7 +42,8 @@
         android:id="@+id/emailTv"
         android:layout_above="@id/changeProfilePicTv"
         android:layout_centerInParent="true"
-        android:layout_marginBottom="5dp"
+        android:layout_marginBottom="1dp"
+        android:textIsSelectable="true"
         />
 
     <TextView
@@ -33,7 +53,7 @@
         android:id="@+id/changeProfilePicTv"
         android:layout_above="@id/profilePic"
         android:layout_centerInParent="true"
-        android:layout_margin="10dp"
+        android:layout_marginTop="2dp"
         android:textColor="@color/colorPrimaryDark"
         />
 
@@ -44,7 +64,7 @@
         android:layout_centerInParent="true"
         android:src="@drawable/ic_launcher_background"
         android:layout_above="@id/btnLayout"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="10dp"
         />
 
     <LinearLayout
@@ -52,7 +72,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/btnLayout"
         android:layout_centerInParent="true"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="5dp"
         android:orientation="horizontal"
         >
 
