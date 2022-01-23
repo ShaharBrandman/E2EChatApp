@@ -2,6 +2,8 @@ package com.example.e2echatapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -46,8 +48,7 @@ public class ChatActivity extends AppCompatActivity {
         keyboard.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                //sendMessage(ChatActivity.this, contactName.getText().toString(), keyboard.getText().toString());
-                Log.d(TAG, "cunt");
+                sendMessage(ChatActivity.this, getIntent().getStringExtra("contact"), keyboard.getText().toString());
                 return false;
             }
         });
