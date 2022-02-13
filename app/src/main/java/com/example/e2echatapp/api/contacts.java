@@ -11,19 +11,19 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 public class contacts extends fileSystem {
     private static final String TAG = "contacts";
+    private static FirebaseDatabase db = FirebaseDatabase.getInstance();
+    private static DatabaseReference reference = null;
 
     public contacts() {
         super();
@@ -55,7 +55,7 @@ public class contacts extends fileSystem {
 
             obj.put("userId", userId);
             obj.put("nickname", nickname);
-            obj.put("publicKey", "DEMO-KEY");
+            obj.put("publicKey", userId);
             obj.put("privateKey", "");
             obj.put("lastTimeStamp", new Timestamp(System.currentTimeMillis()).getTime());
             obj.put("lastMessage", "Press to chat.");
@@ -63,6 +63,8 @@ public class contacts extends fileSystem {
             arr.put(obj);
 
             writeToFile(context, "Contacts.json", arr.toString());
+
+            FirebaseDatabase.getInstance().getReference(obj.getString("publicKey")).setValue("Just created the text");
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -130,29 +132,21 @@ public class contacts extends fileSystem {
         }
     }
 
-    public static void addMessageToChat(Context context, String contact, String timestamp, String message, String sender) {
-        String data = getDataFromFile(context, contact);
-
-        JSONArray arr = new JSONArray();
-
+    public static String getPublicKey(Context context, String contact) {
         try {
-            if (!data.isEmpty()) {
-                arr = new JSONArray(data);
+            JSONArray contacts = new JSONArray(getDataFromFile(context, "Contacts.json"));
+
+            for(int i=0; i<contacts.length(); i++) {
+                if (contacts.getJSONObject(i).get("nickname").equals(contact)) {
+                    return contacts.getJSONObject(i).getString("publicKey");
+                }
             }
-
-            JSONObject obj = new JSONObject();
-            obj.put("timestamp", timestamp);
-            obj.put("message", message);
-            obj.put("sender", sender);
-
-            changeLastMessage(context, contact, message);
-
-            arr.put(obj);
-
-            writeToFile(context, contact, arr.toString());
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             e.printStackTrace();
         }
+
+        return "";
     }
 
     public static void sendMessage(Context context, String contact, final String message) {
@@ -161,7 +155,7 @@ public class contacts extends fileSystem {
 
             for(int i=0; i<contacts.length(); i++) {
                 if (contacts.getJSONObject(i).get("nickname").equals(contact)) {
-                    final DatabaseReference reference = FirebaseDatabase.getInstance().getReference(contacts.getJSONObject(i).getString("publicKey"));
+                    reference = db.getReference(contacts.getJSONObject(i).getString("publicKey"));
 
                     reference.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
@@ -170,29 +164,32 @@ public class contacts extends fileSystem {
 
                             JSONArray data = null;
                             try {
-                                data = new JSONArray(dataSnapshot.getValue().toString());
-                                Log.d(TAG, "mein data: " + data.toString() + ", length: " + data.length());
+                                data = new JSONArray(new Gson().toJson(dataSnapshot.getValue(Object.class)));
+                                Log.d(TAG, "data length is: " + data.length());
                                 for(int i=0; i<data.length(); i++) {
                                     HashMap<String, Object> existingMsg = new HashMap<>();
                                     existingMsg.put("sender", data.getJSONObject(i).getString("sender"));
                                     existingMsg.put("message", data.getJSONObject(i).getString("message"));
                                     existingMsg.put("timestamp", data.getJSONObject(i).getString("timestamp"));
                                     messages.put(String.valueOf(i), existingMsg);
-                                    Log.d(TAG, "index: " + data.get(i).toString());
+                                    //Log.d(TAG, "index: " + data.get(i).toString());
                                 }
                             } catch (JSONException e) {
+                                data = new JSONArray();
                                 e.printStackTrace();
                             }
-                            Log.d(TAG, "messages: " + messages.toString());
+                            //Log.d(TAG, "messages: " + messages.toString());
                             HashMap<String, Object> newMsg = new HashMap<>();
                             newMsg.put("sender", FirebaseAuth.getInstance().getCurrentUser().getUid());
                             newMsg.put("timestamp", new Timestamp(System.currentTimeMillis()).getTime());
                             newMsg.put("message", message);
 
                             if (data != null) {
+                                //Log.d(TAG, "data lenght is " + data.length());
                                 messages.put(String.valueOf(data.length()), newMsg);
                             }
                             else {
+                                //Log.d(TAG, "data lenght is 0, data is null");
                                 messages.put(String.valueOf(0), newMsg);
                             }
 
@@ -201,13 +198,11 @@ public class contacts extends fileSystem {
 
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
-                            Log.d(TAG, "failed");
+                            Log.d(TAG, "failed, " + databaseError.getMessage());
                         }
                     });
                 }
             }
-
-            writeToFile(context, "Contacts.json", contacts.toString());
         }
         catch (JSONException e) {
             e.printStackTrace();
