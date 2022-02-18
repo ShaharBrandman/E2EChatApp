@@ -28,15 +28,16 @@
            android:id="@+id/searchBar"
            android:hint="Search Contacts"
            android:maxLines="1"
+           android:singleLine="true"
            />
 
-       <ImageButton
+       <!--<ImageButton
            android:layout_width="wrap_content"
            android:layout_height="wrap_content"
            android:id="@+id/searchButton"
            android:src="@drawable/search_image"
            android:layout_marginLeft="10dp"
-           />
+           />-->
 
        <ImageButton
            android:layout_width="wrap_content"

@@ -49,6 +49,7 @@
                 android:layout_margin="10dp"
                 android:maxWidth="250dp"
                 android:maxLines="1"
+                android:singleLine="true"
                 />
 
             <TextView
@@ -59,6 +60,7 @@
                 android:layout_margin="10dp"
                 android:maxWidth="250dp"
                 android:maxLines="1"
+                android:singleLine="true"
                 />
         </LinearLayout>
 

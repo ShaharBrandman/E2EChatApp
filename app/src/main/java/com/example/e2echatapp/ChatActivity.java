@@ -15,6 +15,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -49,6 +50,7 @@ public class ChatActivity extends AppCompatActivity {
     private static final String TAG = "ChatActivity";
 
     private Button goBackButton;
+    private ImageButton sendButton;
     private EditText contactName, keyboard;
     private ListView actualChat;
 
@@ -61,6 +63,7 @@ public class ChatActivity extends AppCompatActivity {
         getSupportActionBar().hide();
 
         goBackButton = findViewById(R.id.goBackButton);
+        sendButton = findViewById(R.id.sendBtn);
 
         contactName = findViewById(R.id.contactName);
         keyboard = findViewById(R.id.keyboard);
@@ -76,12 +79,11 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
-        keyboard.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+            public void onClick(View view) {
                 sendMessage(ChatActivity.this, getIntent().getStringExtra("contact"), keyboard.getText().toString());
                 changeLastMessage(ChatActivity.this, getIntent().getStringExtra("contact"), keyboard.getText().toString());
-                return false;
             }
         });
 

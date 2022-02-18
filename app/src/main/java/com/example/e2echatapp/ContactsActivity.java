@@ -4,7 +4,10 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +39,7 @@ public class ContactsActivity extends AppCompatActivity {
     private static final String TAG = "ContactsActivity";
     
     private ListView listview;
-    private ImageButton settingsButton, addContactBtn, searchButton;
+    private ImageButton settingsButton, addContactBtn;
     private EditText searchBar;
     private AlertDialog dialog = null;
     private ArrayList<Contact> contacts = new ArrayList<Contact>();
@@ -53,7 +56,6 @@ public class ContactsActivity extends AppCompatActivity {
 
         settingsButton = findViewById(R.id.settingsButton);
         addContactBtn = findViewById(R.id.AddContactBtn);
-        searchButton = findViewById(R.id.searchButton);
 
         setContacts();
 
@@ -102,6 +104,23 @@ public class ContactsActivity extends AppCompatActivity {
                 }
 
                 dialog.show();
+            }
+        });
+
+        searchBar.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                searchContacts(charSequence.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
             }
         });
     }
