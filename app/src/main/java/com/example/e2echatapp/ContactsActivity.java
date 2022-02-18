@@ -12,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -35,9 +36,10 @@ public class ContactsActivity extends AppCompatActivity {
     private static final String TAG = "ContactsActivity";
     
     private ListView listview;
-    private Button settingsButton, addContactBtn;
+    private ImageButton settingsButton, addContactBtn, searchButton;
+    private EditText searchBar;
     private AlertDialog dialog = null;
-    private static ArrayList<Contact> contacts = new ArrayList<Contact>();
+    private ArrayList<Contact> contacts = new ArrayList<Contact>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,10 +47,13 @@ public class ContactsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_contacts);
         getSupportActionBar().hide();
 
-        listview = findViewById(R.id.contactsListView);
-        settingsButton = findViewById(R.id.settingsButton);
+        searchBar = findViewById(R.id.searchBar);
 
+        listview = findViewById(R.id.contactsListView);
+
+        settingsButton = findViewById(R.id.settingsButton);
         addContactBtn = findViewById(R.id.AddContactBtn);
+        searchButton = findViewById(R.id.searchButton);
 
         setContacts();
 
@@ -123,6 +128,31 @@ public class ContactsActivity extends AppCompatActivity {
         listview.setAdapter(adapter);
     }
 
+    private void searchContacts(String str) {
+        JSONArray arr = getContacts(getApplicationContext());
+
+        contacts = new ArrayList<>();
+
+        try {
+            for(int i=0; i<arr.length(); i++) {
+                if (arr.getJSONObject(i).getString("nickname").contains(str)) {
+                    contacts.add(new Contact(
+                            arr.getJSONObject(i).get("nickname").toString(),
+                            arr.getJSONObject(i).get("lastMessage").toString(),
+                            arr.getJSONObject(i).getLong("lastTimeStamp"),
+                            R.drawable.ic_launcher_background
+                    ));
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        ContactsAdapter adapter = new ContactsAdapter(this, contacts);
+
+        listview.setAdapter(adapter);
+    }
+
     private class ContactsAdapter extends ArrayAdapter<Contact> {
         public ContactsAdapter(Context context, ArrayList<Contact> contacts) {
             super(context, 0, contacts);
@@ -141,7 +171,7 @@ public class ContactsActivity extends AppCompatActivity {
             TextView lastMessage = convertView.findViewById(R.id.lastMessage);
             TextView time = convertView.findViewById(R.id.lastTime);
             ImageView profilePic = convertView.findViewById(R.id.contactPic);
-            Button deleteBtn = convertView.findViewById(R.id.deleteBtn);
+            ImageButton deleteBtn = convertView.findViewById(R.id.deleteBtn);
 
             contactName.setText(contact.getContact());
             lastMessage.setText(contact.getLastMessage());

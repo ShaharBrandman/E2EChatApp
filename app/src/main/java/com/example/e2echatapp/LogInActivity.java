@@ -2,7 +2,6 @@ package com.example.e2echatapp;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,18 +14,13 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.PhoneAuthCredential;
-
-import static com.example.e2echatapp.api.contacts.*;
 
 public class LogInActivity extends AppCompatActivity {
-
-    private static final String TAG = "LogInActivity";
     
-    private static EditText email, emailPassword;
-    private static Button signIn, signUp;
+    private EditText email, emailPassword;
+    private Button signIn, signUp;
 
-    private static FirebaseAuth auth = FirebaseAuth.getInstance();
+    private static final FirebaseAuth auth = FirebaseAuth.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,10 +30,10 @@ public class LogInActivity extends AppCompatActivity {
         setTitle("Login to your account");
 
         email = findViewById(R.id.email);
-        emailPassword = findViewById(R.id.emailPassword);
+        emailPassword = findViewById(R.id.password);
 
-        signIn = findViewById(R.id.continueSignIn);
-        signUp = findViewById(R.id.continueSignUp);
+        signIn = findViewById(R.id.signIn);
+        signUp = findViewById(R.id.signUp);
 
         signIn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -49,10 +43,8 @@ public class LogInActivity extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
-                                    Log.d(TAG, "signInWithEmail: success");
                                     startActivity(new Intent(LogInActivity.this, ContactsActivity.class));
                                 } else {
-                                    Log.w(TAG, "signInWithEmail: failure", task.getException());
                                     Toast.makeText(LogInActivity.this, "Email or password is wrong!", Toast.LENGTH_SHORT).show();
                                 }
                             }
@@ -68,10 +60,8 @@ public class LogInActivity extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
-                                    Log.d(TAG, "createdUsernWithEmail: success");
                                     startActivity(new Intent(LogInActivity.this, ContactsActivity.class));
                                 } else {
-                                    Log.w(TAG, "createdUserWithEmail: failure", task.getException());
                                     Toast.makeText(LogInActivity.this, "Email or password is wrong!", Toast.LENGTH_SHORT).show();
                                 }
                             }

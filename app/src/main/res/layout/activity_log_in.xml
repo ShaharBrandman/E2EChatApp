@@ -10,40 +10,40 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/email"
-        android:layout_above="@+id/emailPassword"
-        android:layout_centerInParent="true"
+        android:layout_above="@id/password"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="25dp"
         android:hint="Enter your email"
-        android:layout_marginTop="15dp"
         />
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/emailPassword"
+        android:id="@+id/password"
+        android:layout_above="@+id/signIn"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="25dp"
         android:hint="Enter your email password"
         android:password="true"
-        android:layout_centerInParent="true"
         />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/emailPassword"
-        android:id="@+id/continueSignIn"
-        android:layout_centerInParent="true"
+        android:id="@+id/signIn"
         android:text="SIGN IN"
-        android:onClick="onClick"
-        android:layout_marginTop="15dp"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
         />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/continueSignIn"
-        android:layout_centerInParent="true"
-        android:layout_marginTop="15dp"
+        android:id="@+id/signUp"
         android:text="SIGN UP"
-        android:id="@+id/continueSignUp"
+        android:layout_below="@id/signIn"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"
         />
 
 </RelativeLayout>

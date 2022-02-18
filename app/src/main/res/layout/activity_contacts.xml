@@ -6,29 +6,46 @@
     android:layout_height="match_parent"
     tools:context=".ContactsActivity">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/AddContactBtn"
-        android:text="+"
-        />
+   <LinearLayout
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:orientation="horizontal"
+       android:layout_alignParentTop="true"
+       android:layout_centerHorizontal="true"
+       android:gravity="center_vertical"
+       >
+       <ImageButton
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:id="@+id/AddContactBtn"
+           android:src="@drawable/add_person_image"
+           android:layout_marginRight="50dp"
+           />
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/searchBar"
-        android:layout_alignParentTop="true"
-        android:layout_centerInParent="true"
-        android:hint="Search your Contacts"
-        />
+       <EditText
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:id="@+id/searchBar"
+           android:hint="Search Contacts"
+           android:maxLines="1"
+           />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/settingsButton"
-        android:layout_alignParentRight="true"
-        android:text="SETTINGS"
-        />
+       <ImageButton
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:id="@+id/searchButton"
+           android:src="@drawable/search_image"
+           android:layout_marginLeft="10dp"
+           />
+
+       <ImageButton
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:id="@+id/settingsButton"
+           android:src="@drawable/settings_image"
+           android:layout_marginLeft="50dp"
+           />
+   </LinearLayout>
 
     <ListView
         android:id="@+id/contactsListView"
