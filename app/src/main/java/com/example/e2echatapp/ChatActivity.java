@@ -43,6 +43,7 @@ import static com.example.e2echatapp.api.contacts.changeLastMessage;
 import static com.example.e2echatapp.api.contacts.deleteContact;
 import static com.example.e2echatapp.api.contacts.fetchContactChat;
 import static com.example.e2echatapp.api.contacts.getPublicKey;
+import static com.example.e2echatapp.api.contacts.getUserId;
 import static com.example.e2echatapp.api.contacts.sendMessage;
 
 public class ChatActivity extends AppCompatActivity {
@@ -71,13 +72,13 @@ public class ChatActivity extends AppCompatActivity {
 
         contactName.setText(getIntent().getStringExtra("contact"));
 
-        contactName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        /*contactName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 changeContactNickname(ChatActivity.this, getIntent().getStringExtra("contact"), contactName.getText().toString());
                 return false;
             }
-        });
+        });*/
 
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,7 +95,10 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
-        db.getReference(getPublicKey(ChatActivity.this, getIntent().getStringExtra("contact"))).addValueEventListener(new ValueEventListener() {
+        db.getReference("unreadMessagesFromUsers").
+                child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .child(getUserId(ChatActivity.this, getIntent().getStringExtra("contact")))
+                .addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 try {
