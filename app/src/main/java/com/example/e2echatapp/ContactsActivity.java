@@ -1,19 +1,23 @@
 package com.example.e2echatapp;
 
+import static com.example.e2echatapp.api.contacts.addContact;
+import static com.example.e2echatapp.api.contacts.deleteContact;
+import static com.example.e2echatapp.api.contacts.getContacts;
+import static com.example.e2echatapp.api.contacts.getUserId;
+import static com.example.e2echatapp.api.contacts.hasUnreadMessages;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -24,15 +28,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-
-import static com.example.e2echatapp.api.contacts.addContact;
-import static com.example.e2echatapp.api.contacts.deleteContact;
-import static com.example.e2echatapp.api.contacts.getContacts;
 
 public class ContactsActivity extends AppCompatActivity {
 
@@ -135,7 +137,14 @@ public class ContactsActivity extends AppCompatActivity {
                         arr.getJSONObject(i).get("nickname").toString(),
                         arr.getJSONObject(i).get("lastMessage").toString(),
                         arr.getJSONObject(i).getLong("lastTimeStamp"),
-                        R.drawable.ic_launcher_background
+                        R.drawable.ic_launcher_background,
+                        hasUnreadMessages(
+                                FirebaseAuth.getInstance().getCurrentUser().getUid(),
+                                getUserId(
+                                        getApplicationContext(),
+                                        arr.getJSONObject(i).get("nickname").toString()
+                                )
+                        )
                 ));
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -159,7 +168,12 @@ public class ContactsActivity extends AppCompatActivity {
                             arr.getJSONObject(i).get("nickname").toString(),
                             arr.getJSONObject(i).get("lastMessage").toString(),
                             arr.getJSONObject(i).getLong("lastTimeStamp"),
-                            R.drawable.ic_launcher_background
+                            R.drawable.ic_launcher_background,
+                            hasUnreadMessages(
+                                    FirebaseAuth.getInstance().getCurrentUser().getUid(),
+                                    getUserId(getApplicationContext(), arr.getJSONObject(i).get("nickname").toString()
+                                    )
+                            )
                     ));
                 }
             }
@@ -184,6 +198,10 @@ public class ContactsActivity extends AppCompatActivity {
 
             if (convertView == null) {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.contacts_list_view, parent, false);
+            }
+
+            if (contact.hasUnreadMessages()) {
+                convertView.setBackgroundColor(Color.BLUE);
             }
 
             TextView contactName = convertView.findViewById(R.id.contactName);
@@ -216,12 +234,14 @@ public class ContactsActivity extends AppCompatActivity {
         private String lastMessage;
         private long time;
         private int image;
+        private boolean hasUnreadMessages;
 
-        public Contact(String contact, String lastMessage, long time, int image) {
+        public Contact(String contact, String lastMessage, long time, int image, Boolean hasUnreadMessages) {
             this.contact = contact;
             this.lastMessage = lastMessage;
             this.time = time;
             this.image = image;
+            this.hasUnreadMessages = hasUnreadMessages;
         }
 
         public String getContact() {
@@ -238,6 +258,10 @@ public class ContactsActivity extends AppCompatActivity {
 
         public int getImage() {
             return this.image;
+        }
+
+        public boolean hasUnreadMessages() {
+            return this.hasUnreadMessages;
         }
     }
 }
