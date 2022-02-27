@@ -28,6 +28,7 @@ public class contacts extends fileSystem {
     private static final String TAG = "contacts";
     private static FirebaseDatabase db = FirebaseDatabase.getInstance();
     private static DatabaseReference reference = null;
+    static boolean hasunreadMessages;
 
     public contacts() {
         super();
@@ -232,7 +233,36 @@ public class contacts extends fileSystem {
     }
 
     public static void updateChatOnDevice(Context context, String senderId) {
-        //finish writing this
+        JSONArray chat = fetchContactChat(context, senderId);
+
+        reference = db
+                .getReference("unreadMessagesFromUsers")
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .child(senderId);
+
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                try {
+                    JSONArray newMessages = new JSONArray(new Gson().toJson(dataSnapshot.getValue(Object.class)));
+
+                    if (newMessages != null) {
+                        for(int i=0; i<newMessages.length(); i++) {
+                            chat.put(newMessages.getJSONObject(i));
+                        }
+
+                        writeToFile(context, senderId + ".json", chat.toString());
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public static String getUserId(Context context, String nickname) {
@@ -251,32 +281,5 @@ public class contacts extends fileSystem {
         }
 
         return "";
-    }
-
-    public static boolean hasUnreadMessages(String reciever, String sender) {
-        final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("unreadMessagesFromUsers").child(reciever).child(sender);
-
-        final boolean[] hasunreadMessages = {false};
-
-        ref.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                JSONArray data = null;
-                try {
-                    data = new JSONArray(new Gson().toJson(dataSnapshot.getValue(Object.class)));
-
-                    hasunreadMessages[0] = data.length() != 0;
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-        return hasunreadMessages[0];
     }
 }

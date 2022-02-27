@@ -38,11 +38,8 @@ import org.json.JSONObject;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 
-import static com.example.e2echatapp.api.contacts.changeContactNickname;
 import static com.example.e2echatapp.api.contacts.changeLastMessage;
-import static com.example.e2echatapp.api.contacts.deleteContact;
 import static com.example.e2echatapp.api.contacts.fetchContactChat;
-import static com.example.e2echatapp.api.contacts.getPublicKey;
 import static com.example.e2echatapp.api.contacts.getUserId;
 import static com.example.e2echatapp.api.contacts.sendMessage;
 
@@ -95,31 +92,53 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
-        db.getReference("unreadMessagesFromUsers").
-                child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+        db.getReference("unreadMessagesFromUsers")
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .child(getUserId(ChatActivity.this, getIntent().getStringExtra("contact")))
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        JSONArray chatContent = null;
+                        ArrayList<JSONObject> tmp = new ArrayList<>();
+
+                        try {
+                            chatContent = fetchContactChat(ChatActivity.this, getIntent().getStringExtra("contact"));
+
+                            if(chatContent == null) {
+                                chatContent = new JSONArray("");
+                            }
+
+                            for(int i=0; i<chatContent.length(); i++) {
+                                tmp.add(chatContent.getJSONObject(i));
+                            }
+                        }
+                        catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        actualChat.setAdapter(new ChatListView(ChatActivity.this, tmp, FirebaseAuth.getInstance().getCurrentUser().getUid()));
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
+        db.getReference("unreadMessagesFromUsers")
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .child(getUserId(ChatActivity.this, getIntent().getStringExtra("contact")))
                 .addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                try {
-                    JSONArray data = new JSONArray(new Gson().toJson(dataSnapshot.getValue(Object.class)));
-                    //Log.d(TAG, data.toString());
-                    ArrayList<JSONObject> tmp = new ArrayList<>();
-                    for(int i=0; i<data.length(); i++) {
-                        tmp.add(data.getJSONObject(i));
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        Log.d(TAG, snapshot.getChildren().toString());
                     }
-                    actualChat.setAdapter(new ChatListView(ChatActivity.this, tmp, FirebaseAuth.getInstance().getCurrentUser().getUid()));
-                }
-                catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.d(TAG, "failed: " + databaseError.getMessage());
-            }
-        });
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
     }
 
     private class ChatListView extends ArrayAdapter<JSONObject> {

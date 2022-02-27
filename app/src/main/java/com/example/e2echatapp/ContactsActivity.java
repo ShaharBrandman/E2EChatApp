@@ -3,8 +3,6 @@ package com.example.e2echatapp;
 import static com.example.e2echatapp.api.contacts.addContact;
 import static com.example.e2echatapp.api.contacts.deleteContact;
 import static com.example.e2echatapp.api.contacts.getContacts;
-import static com.example.e2echatapp.api.contacts.getUserId;
-import static com.example.e2echatapp.api.contacts.hasUnreadMessages;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -13,6 +11,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +28,10 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -59,7 +62,7 @@ public class ContactsActivity extends AppCompatActivity {
         settingsButton = findViewById(R.id.settingsButton);
         addContactBtn = findViewById(R.id.AddContactBtn);
 
-        setContacts();
+        setContacts("");
 
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -95,7 +98,7 @@ public class ContactsActivity extends AppCompatActivity {
                             final EditText username = addContactView.findViewById(R.id.username);
 
                             addContact(ContactsActivity.this, userID.getText().toString(), username.getText().toString());
-                            setContacts();
+                            setContacts("");
 
                             dialog.hide();
                         }
@@ -117,7 +120,7 @@ public class ContactsActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                searchContacts(charSequence.toString());
+                setContacts(charSequence.toString());
             }
 
             @Override
@@ -127,63 +130,52 @@ public class ContactsActivity extends AppCompatActivity {
         });
     }
 
-    private void setContacts() {
+    private void setContacts(String match) {
         JSONArray arr = getContacts(getApplicationContext());
         contacts = new ArrayList<>();
 
-        for(int i=0; i<arr.length(); i++) {
-            try {
-                contacts.add(new Contact(
-                        arr.getJSONObject(i).get("nickname").toString(),
-                        arr.getJSONObject(i).get("lastMessage").toString(),
-                        arr.getJSONObject(i).getLong("lastTimeStamp"),
-                        R.drawable.ic_launcher_background,
-                        hasUnreadMessages(
-                                FirebaseAuth.getInstance().getCurrentUser().getUid(),
-                                getUserId(
-                                        getApplicationContext(),
-                                        arr.getJSONObject(i).get("nickname").toString()
-                                )
-                        )
-                ));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
+        FirebaseDatabase
+                .getInstance()
+                .getReference("unreadMessagesFromUsers")
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        try {
+                            for(int i=0; i<arr.length(); i++) {
+                                if (arr.getJSONObject(i).getString("nickname").contains(match)) {
 
-        ContactsAdapter adapter = new ContactsAdapter(this, contacts);
+                                    boolean tmp = false;
 
-        listview.setAdapter(adapter);
-    }
+                                    for(DataSnapshot sender : snapshot.getChildren()) {
+                                        if (sender.getKey().equals(arr.getJSONObject(i).getString("publicKey"))) {
+                                            tmp = true;
+                                        }
+                                    }
 
-    private void searchContacts(String str) {
-        JSONArray arr = getContacts(getApplicationContext());
+                                    contacts.add(new Contact(
+                                            arr.getJSONObject(i).get("nickname").toString(),
+                                            arr.getJSONObject(i).get("lastMessage").toString(),
+                                            arr.getJSONObject(i).getLong("lastTimeStamp"),
+                                            R.drawable.ic_launcher_background,
+                                            tmp
+                                    ));
+                                }
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
 
-        contacts = new ArrayList<>();
+                        ContactsAdapter adapter = new ContactsAdapter(ContactsActivity.this, contacts);
 
-        try {
-            for(int i=0; i<arr.length(); i++) {
-                if (arr.getJSONObject(i).getString("nickname").contains(str)) {
-                    contacts.add(new Contact(
-                            arr.getJSONObject(i).get("nickname").toString(),
-                            arr.getJSONObject(i).get("lastMessage").toString(),
-                            arr.getJSONObject(i).getLong("lastTimeStamp"),
-                            R.drawable.ic_launcher_background,
-                            hasUnreadMessages(
-                                    FirebaseAuth.getInstance().getCurrentUser().getUid(),
-                                    getUserId(getApplicationContext(), arr.getJSONObject(i).get("nickname").toString()
-                                    )
-                            )
-                    ));
-                }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+                        listview.setAdapter(adapter);
+                    }
 
-        ContactsAdapter adapter = new ContactsAdapter(this, contacts);
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
 
-        listview.setAdapter(adapter);
+                    }
+                });
     }
 
     private class ContactsAdapter extends ArrayAdapter<Contact> {
@@ -221,7 +213,7 @@ public class ContactsActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     deleteContact(ContactsActivity.this, contact.getContact());
-                    setContacts();
+                    setContacts("");
                 }
             });
 
