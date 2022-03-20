@@ -6,6 +6,7 @@ import static com.example.e2echatapp.api.contacts.getContacts;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -100,7 +101,7 @@ public class ContactsActivity extends AppCompatActivity {
                             addContact(ContactsActivity.this, userID.getText().toString(), username.getText().toString());
                             setContacts("");
 
-                            dialog.hide();
+                            dialog.cancel();
                         }
                     });
 

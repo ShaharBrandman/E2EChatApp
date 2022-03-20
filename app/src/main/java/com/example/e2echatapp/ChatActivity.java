@@ -1,22 +1,22 @@
 package com.example.e2echatapp;
 
+import static com.example.e2echatapp.api.contacts.changeLastMessage;
+import static com.example.e2echatapp.api.contacts.fetchContactChat;
+import static com.example.e2echatapp.api.contacts.getUserId;
+import static com.example.e2echatapp.api.contacts.sendMessage;
+import static com.example.e2echatapp.api.contacts.updateChatOnDevice;
+
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -27,9 +27,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,11 +37,6 @@ import org.json.JSONObject;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-
-import static com.example.e2echatapp.api.contacts.changeLastMessage;
-import static com.example.e2echatapp.api.contacts.fetchContactChat;
-import static com.example.e2echatapp.api.contacts.getUserId;
-import static com.example.e2echatapp.api.contacts.sendMessage;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -52,14 +47,13 @@ public class ChatActivity extends AppCompatActivity {
     private EditText contactName, keyboard;
     private ListView actualChat;
 
-    private FirebaseDatabase db = FirebaseDatabase.getInstance();
+    private DatabaseReference conversation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
         getSupportActionBar().hide();
-
         goBackButton = findViewById(R.id.goBackButton);
         sendButton = findViewById(R.id.sendBtn);
 
@@ -77,6 +71,10 @@ public class ChatActivity extends AppCompatActivity {
             }
         });*/
 
+        //set the chat from device data once
+        setChatOnce();
+
+        //send message button
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -85,60 +83,74 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        //Create go back button
         goBackButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(ChatActivity.this, ContactsActivity.class));
+                finish();
             }
         });
 
-        db.getReference("unreadMessagesFromUsers")
+        conversation = FirebaseDatabase.getInstance().getReference("unreadMessagesFromUsers")
                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                .child(getUserId(ChatActivity.this, getIntent().getStringExtra("contact")))
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        JSONArray chatContent = null;
-                        ArrayList<JSONObject> tmp = new ArrayList<>();
+                .child(getUserId(ChatActivity.this, getIntent().getStringExtra("contact")));
 
-                        try {
-                            chatContent = fetchContactChat(ChatActivity.this, getIntent().getStringExtra("contact"));
+        conversation.addValueEventListener(firebaseListener);
+    }
 
-                            if(chatContent == null) {
-                                chatContent = new JSONArray("");
-                            }
+    @Override
+    protected void onDestroy() {
+        conversation.removeEventListener(firebaseListener);
+        super.onDestroy();
+        finish();
+    }
 
-                            for(int i=0; i<chatContent.length(); i++) {
-                                tmp.add(chatContent.getJSONObject(i));
-                            }
-                        }
-                        catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+    private ValueEventListener firebaseListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot snapshot) {
+            if (snapshot.getChildrenCount() != 0) {
+                updateChatOnDevice(
+                        ChatActivity.this,
+                        getUserId(ChatActivity.this, getIntent().getStringExtra("contact")),
+                        snapshot
+                );
+                setChatOnce();
+            }
+        }
 
-                        actualChat.setAdapter(new ChatListView(ChatActivity.this, tmp, FirebaseAuth.getInstance().getCurrentUser().getUid()));
-                    }
+        @Override
+        public void onCancelled(@NonNull DatabaseError error) {
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
+        }
+    };
 
-                    }
-                });
+    private void setChatOnce() {
+        ArrayList<JSONObject> chat = new ArrayList<>();
 
-        db.getReference("unreadMessagesFromUsers")
-                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                .child(getUserId(ChatActivity.this, getIntent().getStringExtra("contact")))
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        Log.d(TAG, snapshot.getChildren().toString());
-                    }
+        try {
+            //fetch messages from device
+            JSONArray messagesFromDevice = fetchContactChat(
+                    ChatActivity.this,
+                    getUserId(ChatActivity.this, getIntent().getStringExtra("contact"))
+            );
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
+            //if there are no messages, create new empty JSON array
+            if(messagesFromDevice == null) {
+                messagesFromDevice = new JSONArray();
+            }
 
-                    }
-                });
+            //add messages to the ArrayList
+            for(int i=0; i<messagesFromDevice.length(); i++) {
+                chat.add(messagesFromDevice.getJSONObject(i));
+            }
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        //no need to explain
+        actualChat.setAdapter(new ChatListView(ChatActivity.this, chat, FirebaseAuth.getInstance().getCurrentUser().getUid()));
     }
 
     private class ChatListView extends ArrayAdapter<JSONObject> {

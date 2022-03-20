@@ -28,7 +28,6 @@ public class contacts extends fileSystem {
     private static final String TAG = "contacts";
     private static FirebaseDatabase db = FirebaseDatabase.getInstance();
     private static DatabaseReference reference = null;
-    static boolean hasunreadMessages;
 
     public contacts() {
         super();
@@ -36,7 +35,8 @@ public class contacts extends fileSystem {
 
     public static JSONArray getContacts(Context context) {
         try {
-            return new JSONArray(getDataFromFile(context, "Contacts.json"));
+            JSONArray data = new JSONArray(getDataFromFile(context, "Contacts.json"));
+            return data;
         } catch (JSONException e) {
             e.printStackTrace();
             return new JSONArray();
@@ -84,10 +84,7 @@ public class contacts extends fileSystem {
             obj.put("lastMessage", "Press to chat.");
 
             arr.put(obj);
-
             writeToFile(context, "Contacts.json", arr.toString());
-
-            //FirebaseDatabase.getInstance().getReference(obj.getString("publicKey")).setValue("Is ready to chat");
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -138,7 +135,7 @@ public class contacts extends fileSystem {
                     tmp.put(contacts.getJSONObject(i));
                 }
             }
-
+            deleteFile(context, getUserId(context, contact) + ".json");
             writeToFile(context, "Contacts.json", tmp.toString());
         }
         catch (JSONException e) {
@@ -146,9 +143,9 @@ public class contacts extends fileSystem {
         }
     }
 
-    public static JSONArray fetchContactChat(Context context, String username) {
+    public static JSONArray fetchContactChat(Context context, String userId) {
         try {
-            return new JSONArray(getDataFromFile(context, username + ".json"));
+            return new JSONArray(getDataFromFile(context, userId + ".json"));
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
@@ -179,7 +176,6 @@ public class contacts extends fileSystem {
 
             for(int i=0; i<contacts.length(); i++) {
                 if (contacts.getJSONObject(i).get("nickname").equals(contact)) {
-                    //reference = db.getReference(contacts.getJSONObject(i).getString("publicKey"));
                     reference = db.getReference("unreadMessagesFromUsers").child(contacts.getJSONObject(i).getString("publicKey")).child(userId);
 
                     reference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -199,7 +195,7 @@ public class contacts extends fileSystem {
                                 }
                             } catch (JSONException e) {
                                 data = new JSONArray();
-                                e.printStackTrace();
+                                Log.d(TAG, "no unread messages in conversation");
                             }
                             //Log.d(TAG, "messages: " + messages.toString());
                             HashMap<String, Object> newMsg = new HashMap<>();
@@ -232,37 +228,36 @@ public class contacts extends fileSystem {
         }
     }
 
-    public static void updateChatOnDevice(Context context, String senderId) {
-        JSONArray chat = fetchContactChat(context, senderId);
+    public static void updateChatOnDevice(Context context, String senderId, DataSnapshot dataSnapshot) {
+        try {
+            JSONArray existingMessages = fetchContactChat(context, senderId);
 
-        reference = db
-                .getReference("unreadMessagesFromUsers")
-                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                .child(senderId);
+            if (existingMessages == null) {
+                existingMessages = new JSONArray();
+            }
 
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                try {
-                    JSONArray newMessages = new JSONArray(new Gson().toJson(dataSnapshot.getValue(Object.class)));
+            //get new messages
+            JSONArray newMessages = new JSONArray(new Gson().toJson(dataSnapshot.getValue(Object.class)));
 
-                    if (newMessages != null) {
-                        for(int i=0; i<newMessages.length(); i++) {
-                            chat.put(newMessages.getJSONObject(i));
-                        }
-
-                        writeToFile(context, senderId + ".json", chat.toString());
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+            //if there are new messages
+            if (newMessages != null) {
+                for (int i = 0; i < newMessages.length(); i++) {
+                    existingMessages.put(newMessages.getJSONObject(i));
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                //Log.d(TAG, existingMessages.toString());
+                writeToFile(context, senderId + ".json", existingMessages.toString());
 
+                db
+                        .getReference("unreadMessagesFromUsers")
+                        .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                        .child(senderId)
+                        .removeValue();
             }
-        });
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public static String getUserId(Context context, String nickname) {
