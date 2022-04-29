@@ -4,11 +4,14 @@ import static com.example.e2echatapp.api.contacts.addContact;
 import static com.example.e2echatapp.api.contacts.deleteContact;
 import static com.example.e2echatapp.api.contacts.getContacts;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -23,6 +26,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -71,6 +75,7 @@ public class ContactsActivity extends AppCompatActivity {
                 Intent intent = new Intent(ContactsActivity.this, ChatActivity.class);
                 intent.putExtra("contact", contacts.get(i).getContact());
                 startActivity(intent);
+                finish();
             }
         });
 
@@ -78,6 +83,7 @@ public class ContactsActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(ContactsActivity.this, SettingsActivity.class));
+                finish();
             }
         });
 
@@ -105,6 +111,19 @@ public class ContactsActivity extends AppCompatActivity {
                         }
                     });
 
+                    addContactView.findViewById(R.id.inviteBtn).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+                                requestPermissions(new String[]{Manifest.permission.SEND_SMS},123);
+                            }
+                            else {
+                                startActivity(new Intent(ContactsActivity.this, InvitationActivity.class));
+                                finish();
+                            }
+                        }
+                    });
+
                     dialog = builder.create();
 
                 }
@@ -129,6 +148,27 @@ public class ContactsActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 123) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startActivity(new Intent(ContactsActivity.this, InvitationActivity.class));
+                finish();
+            }
+            else {
+                Toast.makeText(ContactsActivity.this, "Can't invite friend until you provide SMS permissions", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        finish();
     }
 
     private void setContacts(String match) {

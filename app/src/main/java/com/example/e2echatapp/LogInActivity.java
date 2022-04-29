@@ -12,8 +12,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseNetworkException;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 
 public class LogInActivity extends AppCompatActivity {
     
@@ -44,8 +47,20 @@ public class LogInActivity extends AppCompatActivity {
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
                                     startActivity(new Intent(LogInActivity.this, ContactsActivity.class));
-                                } else {
-                                    Toast.makeText(LogInActivity.this, "Email or password is wrong!", Toast.LENGTH_SHORT).show();
+                                    finish();
+                                }
+                                else {
+                                    try {
+                                        throw task.getException();
+                                    } catch (FirebaseAuthInvalidCredentialsException e) {
+                                        Toast.makeText(LogInActivity.this, "Password is invalid", Toast.LENGTH_SHORT).show();
+                                    } catch(FirebaseAuthInvalidUserException e) {
+                                        Toast.makeText(LogInActivity.this, "User has not been found, Email might be wrong", Toast.LENGTH_SHORT).show();
+                                    } catch (FirebaseNetworkException e) {
+                                        Toast.makeText(LogInActivity.this, "Please check your connection", Toast.LENGTH_SHORT).show();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         });
@@ -61,12 +76,29 @@ public class LogInActivity extends AppCompatActivity {
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
                                     startActivity(new Intent(LogInActivity.this, ContactsActivity.class));
+                                    finish();
                                 } else {
-                                    Toast.makeText(LogInActivity.this, "Email or password is wrong!", Toast.LENGTH_SHORT).show();
+                                    try {
+                                        throw task.getException();
+                                    } catch (FirebaseAuthInvalidCredentialsException e) {
+                                        Toast.makeText(LogInActivity.this, "Password is invalid", Toast.LENGTH_SHORT).show();
+                                    } catch(FirebaseAuthInvalidUserException e) {
+                                        Toast.makeText(LogInActivity.this, "User has not been found, Email might be wrong", Toast.LENGTH_SHORT).show();
+                                    } catch (FirebaseNetworkException e) {
+                                        Toast.makeText(LogInActivity.this, "Please check your connection", Toast.LENGTH_SHORT).show();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         });
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        finish();
     }
 }

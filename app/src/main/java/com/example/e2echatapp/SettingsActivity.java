@@ -37,6 +37,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(SettingsActivity.this, ContactsActivity.class));
+                finish();
             }
         });
 
@@ -45,6 +46,7 @@ public class SettingsActivity extends AppCompatActivity {
             public void onClick(View view) {
                 auth.signOut();
                 startActivity(new Intent(SettingsActivity.this, LogInActivity.class));
+                finish();
             }
         });
 
@@ -53,7 +55,14 @@ public class SettingsActivity extends AppCompatActivity {
             public void onClick(View view) {
                 auth.getCurrentUser().delete();
                 startActivity(new Intent(SettingsActivity.this, LogInActivity.class));
+                finish();
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        finish();
     }
 }

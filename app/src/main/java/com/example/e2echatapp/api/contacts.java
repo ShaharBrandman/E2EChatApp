@@ -245,7 +245,6 @@ public class contacts extends fileSystem {
                     existingMessages.put(newMessages.getJSONObject(i));
                 }
 
-                //Log.d(TAG, existingMessages.toString());
                 writeToFile(context, senderId + ".json", existingMessages.toString());
 
                 db

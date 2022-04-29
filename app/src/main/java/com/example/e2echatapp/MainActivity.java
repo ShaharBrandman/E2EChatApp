@@ -17,11 +17,31 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         getSupportActionBar().hide();
 
-        if(auth.getCurrentUser() == null) {
+        if (auth.getCurrentUser() == null) {
             startActivity(new Intent(this, LogInActivity.class));
         }
         else {
             startActivity(new Intent(this, ContactsActivity.class));
         }
+        finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        finish();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (auth.getCurrentUser() == null) {
+            startActivity(new Intent(this, LogInActivity.class));
+        }
+        else {
+            startActivity(new Intent(this, ContactsActivity.class));
+        }
+        finish();
     }
 }
