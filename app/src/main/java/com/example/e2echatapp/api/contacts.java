@@ -236,7 +236,7 @@ public class contacts extends fileSystem {
                 existingMessages = new JSONArray();
             }
 
-            //get new messages
+            //get new messages and convert to json array
             JSONArray newMessages = new JSONArray(new Gson().toJson(dataSnapshot.getValue(Object.class)));
 
             //if there are new messages
@@ -249,8 +249,8 @@ public class contacts extends fileSystem {
 
                 db
                         .getReference("unreadMessagesFromUsers")
-                        .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                         .child(senderId)
+                        .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                         .removeValue();
             }
         }

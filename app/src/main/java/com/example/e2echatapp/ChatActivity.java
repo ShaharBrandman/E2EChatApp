@@ -93,8 +93,8 @@ public class ChatActivity extends AppCompatActivity {
         });
 
         conversation = FirebaseDatabase.getInstance().getReference("unreadMessagesFromUsers")
-                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                .child(getUserId(ChatActivity.this, getIntent().getStringExtra("contact")));
+                .child(getUserId(ChatActivity.this, getIntent().getStringExtra("contact")))
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
         conversation.addValueEventListener(firebaseListener);
     }

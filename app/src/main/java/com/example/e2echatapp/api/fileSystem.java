@@ -37,6 +37,10 @@ public class fileSystem {
         try {
             File file = new File(context.getFilesDir() + "/" + fileName);
 
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+
             int length = (int) file.length();
 
             byte[] bytes = new byte[length];

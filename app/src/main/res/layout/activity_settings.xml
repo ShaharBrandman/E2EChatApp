@@ -46,26 +46,24 @@
         android:textIsSelectable="true"
         />
 
-    <TextView
+    <Button
+        android:id="@+id/changeProfilePicTv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Click to change profile picture"
-        android:id="@+id/changeProfilePicTv"
         android:layout_above="@id/profilePic"
         android:layout_centerInParent="true"
         android:layout_marginTop="2dp"
-        android:textColor="@color/colorPrimaryDark"
-        />
+        android:text="Click to take profile picture"
+        android:textColor="@color/colorPrimaryDark" />
 
     <ImageView
+        android:id="@+id/profilePic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/profilePic"
-        android:layout_centerInParent="true"
-        android:src="@drawable/ic_launcher_background"
         android:layout_above="@id/btnLayout"
+        android:layout_centerInParent="true"
         android:layout_marginBottom="10dp"
-        />
+        android:src="@drawable/ic_launcher_background" />
 
     <LinearLayout
         android:layout_width="wrap_content"

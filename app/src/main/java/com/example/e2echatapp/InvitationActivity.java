@@ -1,10 +1,13 @@
 package com.example.e2echatapp;
 
+import static com.example.e2echatapp.api.contacts.addContact;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -38,6 +41,9 @@ public class InvitationActivity extends AppCompatActivity {
     private ListView listView;
     private Button backButton;
     private EditText searchContacts;
+
+    private String invitedContact;
+    private AlertDialog dialog = null;
     private ArrayList<Contact> contacts = new ArrayList<>();
 
     @Override
@@ -45,7 +51,7 @@ public class InvitationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_invitation);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+        if (checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, 100);
         }
         else {
@@ -131,17 +137,42 @@ public class InvitationActivity extends AppCompatActivity {
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                        SmsManager smsManager = SmsManager.getDefault();
-                        smsManager.sendTextMessage(
-                                contacts.get(i).phoneNumber,
-                                null,
-                                "Hi! I'm inviting you to chat with me on E2EChatApp, My UserID is: " + FirebaseAuth.getInstance().getCurrentUser().getUid(),
-                                null,
-                                null
-                        );
-                        Toast.makeText(InvitationActivity.this,  contacts.get(i).nickname + " has been invited!", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(InvitationActivity.this, ContactsActivity.class));
-                        finish();
+                        final View inviteContact = LayoutInflater.from(InvitationActivity.this).inflate(R.layout.invite_contact, null);
+
+                        final AlertDialog.Builder builder = new AlertDialog.Builder(InvitationActivity.this);
+
+                        builder.setView(inviteContact);
+                        builder.setCancelable(true);
+
+                        TextView invitedContact = inviteContact.findViewById(R.id.contactInvited);
+                        invitedContact.setText("Send " + contacts.get(i).nickname + " an invite?");
+
+                        inviteContact.findViewById(R.id.no).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                dialog.cancel();
+                            }
+                        });
+
+                        inviteContact.findViewById(R.id.yes).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                SmsManager smsManager = SmsManager.getDefault();
+                                smsManager.sendTextMessage(
+                                        contacts.get(i).phoneNumber,
+                                        null,
+                                        "Hi! I'm inviting you to chat with me on E2EChatApp, My UserID is: " + FirebaseAuth.getInstance().getCurrentUser().getUid(),
+                                        null,
+                                        null
+                                );
+                                Toast.makeText(InvitationActivity.this,  contacts.get(i).nickname + " has been invited!", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(InvitationActivity.this, ContactsActivity.class));
+                                finish();
+                            }
+                        });
+
+                        dialog = builder.create();
+                        dialog.show();
                     }
                 });
 
