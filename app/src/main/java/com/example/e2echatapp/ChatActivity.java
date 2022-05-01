@@ -9,7 +9,6 @@ import static com.example.e2echatapp.api.contacts.updateChatOnDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -80,6 +79,7 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(View view) {
                 sendMessage(ChatActivity.this, getIntent().getStringExtra("contact"), keyboard.getText().toString());
                 changeLastMessage(ChatActivity.this, getIntent().getStringExtra("contact"), keyboard.getText().toString());
+                setChatOnce();
             }
         });
 
@@ -92,9 +92,11 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
-        conversation = FirebaseDatabase.getInstance().getReference("unreadMessagesFromUsers")
-                .child(getUserId(ChatActivity.this, getIntent().getStringExtra("contact")))
-                .child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        //Sender -> Receiver conversation direction
+        conversation = FirebaseDatabase.getInstance()
+                .getReference("unreadMessagesFromUsers")
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .child(getUserId(ChatActivity.this, getIntent().getStringExtra("contact")));
 
         conversation.addValueEventListener(firebaseListener);
     }

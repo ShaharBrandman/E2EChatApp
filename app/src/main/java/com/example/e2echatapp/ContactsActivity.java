@@ -7,15 +7,12 @@ import static com.example.e2echatapp.api.contacts.getContacts;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -75,7 +72,6 @@ public class ContactsActivity extends AppCompatActivity {
                 Intent intent = new Intent(ContactsActivity.this, ChatActivity.class);
                 intent.putExtra("contact", contacts.get(i).getContact());
                 startActivity(intent);
-                finish();
             }
         });
 
@@ -83,7 +79,6 @@ public class ContactsActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(ContactsActivity.this, SettingsActivity.class));
-                finish();
             }
         });
 

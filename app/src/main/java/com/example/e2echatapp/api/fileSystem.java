@@ -1,17 +1,12 @@
 package com.example.e2echatapp.api;
 
-import android.content.ContentResolver;
 import android.content.Context;
-import android.database.Cursor;
-import android.provider.ContactsContract;
 import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
 
 public class fileSystem {
     public static void writeToFile(Context context, String fileName, String data) {
