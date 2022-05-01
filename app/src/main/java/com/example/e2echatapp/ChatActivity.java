@@ -102,6 +102,18 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        setChatOnce();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        setChatOnce();
+    }
+
+    @Override
     protected void onDestroy() {
         conversation.removeEventListener(firebaseListener);
         super.onDestroy();
