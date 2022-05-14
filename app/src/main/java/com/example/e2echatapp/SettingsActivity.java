@@ -12,12 +12,18 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -29,10 +35,17 @@ public class SettingsActivity extends AppCompatActivity {
 
     private static final String TAG = "SettingsActivity";
     
-    private Button goBack, signOut, deleteUser, takeProfilePicture;
-    private TextView emailTv, userId;
+    private Button goBack, signOut, deleteUser, takeProfilePicture, saveChangesBtn;
+    private TextView emailTv, userIdTv;
     private ImageView profilePic;
     private FirebaseAuth auth = FirebaseAuth.getInstance();
+
+    private String userId = auth.getCurrentUser().getUid();
+    private File profilePicFile = new File(
+            Environment.getExternalStorageDirectory() +
+                    File.separator + userId +
+                    ".jpg");
+    private Bitmap bitmapImage = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,20 +57,16 @@ public class SettingsActivity extends AppCompatActivity {
         signOut = findViewById(R.id.signOut);
         deleteUser = findViewById(R.id.deleteUser);
         takeProfilePicture = findViewById(R.id.changeProfilePicTv);
+        saveChangesBtn = findViewById(R.id.saveChanges);
 
         emailTv = findViewById(R.id.emailTv);
-        userId = findViewById(R.id.userId);
+        userIdTv = findViewById(R.id.userId);
 
         profilePic = findViewById(R.id.profilePic);
 
-        userId.setText(auth.getCurrentUser().getUid());
+        userIdTv.setText(userId);
 
         emailTv.setText(auth.getCurrentUser().getEmail());
-
-        File profilePicFile = new File(
-                Environment.getExternalStorageDirectory() +
-                        File.separator + auth.getCurrentUser().getUid() +
-                        ".jpg");
 
         if(profilePicFile.exists()) {
             profilePic.setImageBitmap(BitmapFactory.decodeFile(profilePicFile.getPath()));
@@ -108,6 +117,13 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             }
         });
+
+        saveChangesBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                saveChanges();
+            }
+        });
     }
 
     @Override
@@ -123,31 +139,47 @@ public class SettingsActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == 100) {
-            Bitmap bitmapImage = (Bitmap) data.getExtras().get("data");
+            bitmapImage = (Bitmap) data.getExtras().get("data");
+            profilePic.setImageBitmap(bitmapImage);
+        }
+    }
 
+    private void saveChanges() {
+        if (bitmapImage != null) {
             ByteArrayOutputStream imageBytes = new ByteArrayOutputStream();
             bitmapImage.compress(Bitmap.CompressFormat.JPEG, 60, imageBytes);
 
-            try {
-                File imageFile = new File(
-                        Environment.getExternalStorageDirectory() +
-                                 File.separator +
-                                 auth.getCurrentUser().getUid() +
-                                 ".jpg"
-                );
+            byte[] data = imageBytes.toByteArray();
 
-                imageFile.createNewFile();
+            StorageReference storageRef = FirebaseStorage
+                    .getInstance().getReference(FirebaseAuth.getInstance().getCurrentUser().getUid() + ".jpg");
 
-                FileOutputStream output = new FileOutputStream(imageFile);
-                output.write(imageBytes.toByteArray());
-                output.close();
+            UploadTask uploadTask = storageRef.putBytes(data);
 
-                profilePic.setImageBitmap(BitmapFactory.decodeFile(imageFile.getPath()));
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    Toast.makeText(SettingsActivity.this, "Couldn't update profile picture", Toast.LENGTH_SHORT).show();
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    try {
+                        profilePicFile.createNewFile();
+                        FileOutputStream output = new FileOutputStream(profilePicFile);
+                        output.write(data);
+                        output.close();
+
+                        //profilePic.setImageBitmap(BitmapFactory.decodeFile(profilePicFile.getPath()));
+                        Toast.makeText(SettingsActivity.this, "Profile picture updated successfully!", Toast.LENGTH_SHORT).show();
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
         }
     }
 

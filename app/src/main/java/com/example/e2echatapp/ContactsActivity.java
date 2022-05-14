@@ -9,10 +9,14 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,12 +33,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.google.gson.Gson;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -197,7 +206,7 @@ public class ContactsActivity extends AppCompatActivity {
                                             arr.getJSONObject(i).get("nickname").toString(),
                                             lastMessage,
                                             arr.getJSONObject(i).getLong("lastTimeStamp"),
-                                            R.drawable.ic_launcher_background,
+                                            arr.getJSONObject(i).getString("publicKey"),
                                             newMessages
                                     ));
                                 }
@@ -248,7 +257,22 @@ public class ContactsActivity extends AppCompatActivity {
             Timestamp tmp = new Timestamp(contact.getTime());
             time.setText(tmp.getHours() + ":" + tmp.getMinutes());
 
-            profilePic.setImageResource(contact.getImage());
+            StorageReference storageRef = FirebaseStorage
+                    .getInstance().getReference(contact.getContactId() + ".jpg");
+
+            storageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                @Override
+                public void onSuccess(Uri uri) {
+                    Picasso.get().load(uri).into(profilePic);
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    exception.printStackTrace();
+                    profilePic.setImageResource(R.drawable.ic_launcher_background);
+                }
+            });
+
             deleteBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -265,14 +289,14 @@ public class ContactsActivity extends AppCompatActivity {
         private String contact;
         private String lastMessage;
         private long time;
-        private int image;
+        private String contactId;
         private boolean hasUnreadMessages;
 
-        public Contact(String contact, String lastMessage, long time, int image, Boolean hasUnreadMessages) {
+        public Contact(String contact, String lastMessage, long time, String contactId, Boolean hasUnreadMessages) {
             this.contact = contact;
             this.lastMessage = lastMessage;
             this.time = time;
-            this.image = image;
+            this.contactId = contactId;
             this.hasUnreadMessages = hasUnreadMessages;
         }
 
@@ -288,8 +312,8 @@ public class ContactsActivity extends AppCompatActivity {
             return this.time;
         }
 
-        public int getImage() {
-            return this.image;
+        public String getContactId() {
+            return this.contactId;
         }
 
         public boolean hasUnreadMessages() {
