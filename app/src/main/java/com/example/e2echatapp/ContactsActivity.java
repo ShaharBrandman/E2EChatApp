@@ -34,6 +34,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -181,20 +182,23 @@ public class ContactsActivity extends AppCompatActivity {
                             for(int i=0; i<arr.length(); i++) {
                                 if (arr.getJSONObject(i).getString("nickname").contains(match)) {
 
-                                    boolean tmp = false;
+                                    boolean newMessages = false;
+                                    String lastMessage = arr.getJSONObject(i).get("lastMessage").toString();
 
-                                    for(DataSnapshot sender : snapshot.getChildren()) {
-                                        if (sender.getKey().equals(arr.getJSONObject(i).getString("publicKey"))) {
-                                            tmp = true;
+                                    for(DataSnapshot child : snapshot.getChildren()) {
+                                        if (child.getKey().equals(arr.getJSONObject(i).getString("publicKey"))) {
+                                            newMessages = true;
+                                            JSONArray tmp = new JSONArray(new Gson().toJson(child.getValue(Object.class)));
+                                            lastMessage = tmp.getJSONObject(0).getString("message");
                                         }
                                     }
 
                                     contacts.add(new Contact(
                                             arr.getJSONObject(i).get("nickname").toString(),
-                                            arr.getJSONObject(i).get("lastMessage").toString(),
+                                            lastMessage,
                                             arr.getJSONObject(i).getLong("lastTimeStamp"),
                                             R.drawable.ic_launcher_background,
-                                            tmp
+                                            newMessages
                                     ));
                                 }
                             }

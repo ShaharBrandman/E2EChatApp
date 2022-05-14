@@ -43,7 +43,8 @@ public class ChatActivity extends AppCompatActivity {
 
     private Button goBackButton;
     private ImageButton sendButton;
-    private EditText contactName, keyboard;
+    private EditText keyboard;
+    private TextView contactName;
     private ListView actualChat;
 
     private DatabaseReference conversation;
@@ -61,14 +62,6 @@ public class ChatActivity extends AppCompatActivity {
         actualChat = findViewById(R.id.chat);
 
         contactName.setText(getIntent().getStringExtra("contact"));
-
-        /*contactName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                changeContactNickname(ChatActivity.this, getIntent().getStringExtra("contact"), contactName.getText().toString());
-                return false;
-            }
-        });*/
 
         //set the chat from device data once
         setChatOnce();
@@ -164,15 +157,23 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         //no need to explain
-        actualChat.setAdapter(new ChatListView(ChatActivity.this, chat, FirebaseAuth.getInstance().getCurrentUser().getUid()));
+        actualChat.setAdapter(
+                new ChatListView(
+                        ChatActivity.this,
+                        chat,
+                        getIntent().getStringExtra("contact"),
+                        FirebaseAuth.getInstance().getCurrentUser().getUid()
+                )
+        );
     }
 
     private class ChatListView extends ArrayAdapter<JSONObject> {
-        private String userId;
+        private String yourId, contactNickname;
 
-        public ChatListView(Context context, ArrayList<JSONObject> messages, String id) {
+        public ChatListView(Context context, ArrayList<JSONObject> messages, String contactNickname, String yourId) {
             super(context, 0, messages);
-            this.userId = id;
+            this.yourId = yourId;
+            this.contactNickname = contactNickname;
         }
 
         @NonNull
@@ -193,10 +194,12 @@ public class ChatActivity extends AppCompatActivity {
                 Timestamp tmp = new Timestamp(message.getLong("timestamp"));
                 time.setText(tmp.getHours() + ":" + tmp.getMinutes());
 
-                if (message.getString("sender").equals(userId)) {
-                    //findViewById(R.id.chatLayout).setPadding(0, 0, 290, 0);
-                    TextView sender = convertView.findViewById(R.id.sender);
+                TextView sender = convertView.findViewById(R.id.sender);
+                if (message.getString("sender").equals(yourId)) {
                     sender.setText("This message is yours:");
+                }
+                else {
+                    sender.setText(contactNickname);
                 }
             } catch (JSONException e) {
                 e.printStackTrace();

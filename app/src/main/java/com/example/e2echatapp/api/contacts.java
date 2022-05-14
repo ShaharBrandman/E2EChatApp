@@ -87,24 +87,6 @@ public class contacts extends fileSystem {
         }
     }
 
-    //deprecated feature, might have a comeback in the feature
-    /*public static void changeContactNickname(Context context, String contact, String newNickname) {
-        try {
-            JSONArray contacts = new JSONArray(getDataFromFile(context, "Contacts.json"));
-
-            for(int i=0; i<contacts.length(); i++) {
-                if (contacts.getJSONObject(i).get("nickname").equals(contact)) {
-                    contacts.getJSONObject(i).put("nickname", newNickname);
-                }
-            }
-
-            writeToFile(context, "Contacts.json", contacts.toString());
-        }
-        catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }*/
-
     public static void changeLastMessage(Context context, String contact, String newMessage) {
         try {
             JSONArray contacts = new JSONArray(getDataFromFile(context, "Contacts.json"));
@@ -249,6 +231,11 @@ public class contacts extends fileSystem {
                 }
 
                 writeToFile(context, senderId + ".json", existingMessages.toString());
+                changeLastMessage(
+                        context,
+                        getContactNickname(context, senderId),
+                        newMessages.getJSONObject(newMessages.length() - 1).getString("message")
+                );
 
                 db
                         .getReference("unreadMessagesFromUsers")
