@@ -109,6 +109,23 @@ public class contacts extends fileSystem {
         }
     }
 
+    public static void changeLastTimestamp(Context context, String contact, Long newTimestamp) {
+        try {
+            JSONArray contacts = new JSONArray(getDataFromFile(context, "Contacts.json"));
+
+            for(int i=0; i<contacts.length(); i++) {
+                if (contacts.getJSONObject(i).get("nickname").equals(contact)) {
+                    contacts.getJSONObject(i).put("timestamp", newTimestamp);
+                }
+            }
+
+            writeToFile(context, "Contacts.json", contacts.toString());
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void deleteContact(Context context, String contact) {
         try {
             JSONArray contacts = new JSONArray(getDataFromFile(context, "Contacts.json"));
@@ -235,11 +252,19 @@ public class contacts extends fileSystem {
                     existingMessages.put(newMessages.getJSONObject(i));
                 }
 
+                String contactNickname = getContactNickname(context, senderId);
+
                 writeToFile(context, senderId + ".json", existingMessages.toString());
                 changeLastMessage(
                         context,
-                        getContactNickname(context, senderId),
+                        contactNickname,
                         newMessages.getJSONObject(newMessages.length() - 1).getString("message")
+                );
+
+                changeLastTimestamp(
+                        context,
+                        contactNickname,
+                        new Timestamp(System.currentTimeMillis()).getTime()
                 );
 
                 db

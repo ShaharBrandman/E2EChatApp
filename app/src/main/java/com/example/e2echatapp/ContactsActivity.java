@@ -3,6 +3,7 @@ package com.example.e2echatapp;
 import static com.example.e2echatapp.api.contacts.addContact;
 import static com.example.e2echatapp.api.contacts.deleteContact;
 import static com.example.e2echatapp.api.contacts.getContacts;
+import static com.example.e2echatapp.api.contacts.getUserId;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -36,8 +37,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
@@ -60,6 +63,8 @@ public class ContactsActivity extends AppCompatActivity {
     private EditText searchBar;
     private AlertDialog dialog = null;
     private ArrayList<Contact> contacts = new ArrayList<Contact>();
+
+    private DatabaseReference conversationsWithUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,6 +158,13 @@ public class ContactsActivity extends AppCompatActivity {
 
             }
         });
+
+        //Receiver <- Sender conversation direction
+        conversationsWithUser = FirebaseDatabase.getInstance()
+                .getReference("unreadMessagesFromUsers")
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+
+        conversationsWithUser.addChildEventListener(firebaseListener);
     }
 
     @Override
@@ -173,11 +185,12 @@ public class ContactsActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        conversationsWithUser.removeEventListener(firebaseListener);
         finish();
     }
 
     private void setContacts(String match) {
-        JSONArray arr = getContacts(getApplicationContext());
+        JSONArray contactsList = getContacts(getApplicationContext());
         contacts = new ArrayList<>();
 
         FirebaseDatabase
@@ -188,25 +201,27 @@ public class ContactsActivity extends AppCompatActivity {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         try {
-                            for(int i=0; i<arr.length(); i++) {
-                                if (arr.getJSONObject(i).getString("nickname").contains(match)) {
+                            for(int i=0; i<contactsList.length(); i++) {
+                                if (contactsList.getJSONObject(i).getString("nickname").contains(match)) {
 
                                     boolean newMessages = false;
-                                    String lastMessage = arr.getJSONObject(i).get("lastMessage").toString();
+                                    String lastMessage = contactsList.getJSONObject(i).get("lastMessage").toString();
+                                    long lastTimeStamp = contactsList.getJSONObject(i).getLong("lastTimeStamp");
 
                                     for(DataSnapshot child : snapshot.getChildren()) {
-                                        if (child.getKey().equals(arr.getJSONObject(i).getString("publicKey"))) {
+                                        if (child.getKey().equals(contactsList.getJSONObject(i).getString("publicKey"))) {
                                             newMessages = true;
                                             JSONArray tmp = new JSONArray(new Gson().toJson(child.getValue(Object.class)));
                                             lastMessage = tmp.getJSONObject(0).getString("message");
+                                            lastTimeStamp = tmp.getJSONObject(0).getLong("timestamp");
                                         }
                                     }
 
                                     contacts.add(new Contact(
-                                            arr.getJSONObject(i).get("nickname").toString(),
+                                            contactsList.getJSONObject(i).get("nickname").toString(),
                                             lastMessage,
-                                            arr.getJSONObject(i).getLong("lastTimeStamp"),
-                                            arr.getJSONObject(i).getString("publicKey"),
+                                            lastTimeStamp,
+                                            contactsList.getJSONObject(i).getString("publicKey"),
                                             newMessages
                                     ));
                                 }
@@ -226,6 +241,33 @@ public class ContactsActivity extends AppCompatActivity {
                     }
                 });
     }
+
+    private ChildEventListener firebaseListener = new ChildEventListener() {
+        @Override
+        public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+            setContacts(searchBar.getText().toString());
+        }
+
+        @Override
+        public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+        }
+
+        @Override
+        public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+        }
+
+        @Override
+        public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError error) {
+
+        }
+    };
 
     private class ContactsAdapter extends ArrayAdapter<Contact> {
         public ContactsAdapter(Context context, ArrayList<Contact> contacts) {

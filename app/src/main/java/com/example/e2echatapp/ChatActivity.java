@@ -72,6 +72,8 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(View view) {
                 sendMessage(ChatActivity.this, getIntent().getStringExtra("contact"), keyboard.getText().toString());
                 changeLastMessage(ChatActivity.this, getIntent().getStringExtra("contact"), keyboard.getText().toString());
+
+                keyboard.getText().clear();
                 setChatOnce();
             }
         });
