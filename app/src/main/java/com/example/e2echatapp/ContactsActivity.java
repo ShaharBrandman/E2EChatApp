@@ -3,18 +3,16 @@ package com.example.e2echatapp;
 import static com.example.e2echatapp.api.contacts.addContact;
 import static com.example.e2echatapp.api.contacts.deleteContact;
 import static com.example.e2echatapp.api.contacts.getContacts;
-import static com.example.e2echatapp.api.contacts.getUserId;
 
 import android.Manifest;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -34,6 +32,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.e2echatapp.api.notificationService;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -165,6 +164,10 @@ public class ContactsActivity extends AppCompatActivity {
                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
         conversationsWithUser.addChildEventListener(firebaseListener);
+
+        if(!isServiceRunning(notificationService.class)) {
+            startService(new Intent(ContactsActivity.this, notificationService.class));
+        }
     }
 
     @Override
@@ -268,6 +271,16 @@ public class ContactsActivity extends AppCompatActivity {
 
         }
     };
+
+    private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private class ContactsAdapter extends ArrayAdapter<Contact> {
         public ContactsAdapter(Context context, ArrayList<Contact> contacts) {
