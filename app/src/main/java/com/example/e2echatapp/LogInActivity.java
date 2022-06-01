@@ -41,57 +41,73 @@ public class LogInActivity extends AppCompatActivity {
         signIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                auth.signInWithEmailAndPassword(email.getText().toString(), emailPassword.getText().toString())
-                        .addOnCompleteListener(LogInActivity.this, new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful()) {
-                                    startActivity(new Intent(LogInActivity.this, ContactsActivity.class));
-                                    finish();
-                                }
-                                else {
-                                    try {
-                                        throw task.getException();
-                                    } catch (FirebaseAuthInvalidCredentialsException e) {
-                                        Toast.makeText(LogInActivity.this, "Password is invalid", Toast.LENGTH_SHORT).show();
-                                    } catch(FirebaseAuthInvalidUserException e) {
-                                        Toast.makeText(LogInActivity.this, "User has not been found, Email might be wrong", Toast.LENGTH_SHORT).show();
-                                    } catch (FirebaseNetworkException e) {
-                                        Toast.makeText(LogInActivity.this, "Please check your connection", Toast.LENGTH_SHORT).show();
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
+                String emailString = email.getText().toString();
+                String emailPasswordString  = emailPassword.getText().toString();
+
+                if (!emailString.isEmpty() && !emailPasswordString.isEmpty()) {
+                    auth.signInWithEmailAndPassword(emailString, emailPasswordString)
+                            .addOnCompleteListener(LogInActivity.this, new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    if (task.isSuccessful()) {
+                                        startActivity(new Intent(LogInActivity.this, ContactsActivity.class));
+                                        finish();
+                                    }
+                                    else {
+                                        try {
+                                            throw task.getException();
+                                        } catch (FirebaseAuthInvalidCredentialsException e) {
+                                            Toast.makeText(LogInActivity.this, "Password is invalid", Toast.LENGTH_SHORT).show();
+                                        } catch(FirebaseAuthInvalidUserException e) {
+                                            Toast.makeText(LogInActivity.this, "User has not been found, Email might be wrong", Toast.LENGTH_SHORT).show();
+                                        } catch (FirebaseNetworkException e) {
+                                            Toast.makeText(LogInActivity.this, "Please check your connection", Toast.LENGTH_SHORT).show();
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
                                     }
                                 }
-                            }
-                        });
+                            });
+                }
+                else {
+                    Toast.makeText(LogInActivity.this, "All fields has to be filled before signing in!", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
         signUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                auth.createUserWithEmailAndPassword(email.getText().toString(), emailPassword.getText().toString())
-                        .addOnCompleteListener(LogInActivity.this, new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful()) {
-                                    startActivity(new Intent(LogInActivity.this, ContactsActivity.class));
-                                    finish();
-                                } else {
-                                    try {
-                                        throw task.getException();
-                                    } catch (FirebaseAuthInvalidCredentialsException e) {
-                                        Toast.makeText(LogInActivity.this, "Password is invalid", Toast.LENGTH_SHORT).show();
-                                    } catch(FirebaseAuthInvalidUserException e) {
-                                        Toast.makeText(LogInActivity.this, "User has not been found, Email might be wrong", Toast.LENGTH_SHORT).show();
-                                    } catch (FirebaseNetworkException e) {
-                                        Toast.makeText(LogInActivity.this, "Please check your connection", Toast.LENGTH_SHORT).show();
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
+                String emailString = email.getText().toString();
+                String emailPasswordString  = emailPassword.getText().toString();
+
+                if (!emailString.isEmpty() && !emailPasswordString.isEmpty()) {
+                    auth.createUserWithEmailAndPassword(email.getText().toString(), emailPassword.getText().toString())
+                            .addOnCompleteListener(LogInActivity.this, new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    if (task.isSuccessful()) {
+                                        startActivity(new Intent(LogInActivity.this, ContactsActivity.class));
+                                        finish();
+                                    } else {
+                                        try {
+                                            throw task.getException();
+                                        } catch (FirebaseAuthInvalidCredentialsException e) {
+                                            Toast.makeText(LogInActivity.this, "Password is invalid", Toast.LENGTH_SHORT).show();
+                                        } catch(FirebaseAuthInvalidUserException e) {
+                                            Toast.makeText(LogInActivity.this, "User has not been found, Email might be wrong", Toast.LENGTH_SHORT).show();
+                                        } catch (FirebaseNetworkException e) {
+                                            Toast.makeText(LogInActivity.this, "Please check your connection", Toast.LENGTH_SHORT).show();
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
                                     }
                                 }
-                            }
-                        });
+                            });
+                }
+                else {
+                    Toast.makeText(LogInActivity.this, "All fields has to be filled before signing up!", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

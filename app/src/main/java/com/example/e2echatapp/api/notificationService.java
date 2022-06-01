@@ -1,12 +1,13 @@
 package com.example.e2echatapp.api;
 
+import static com.example.e2echatapp.api.contacts.getContactNickname;
+
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,7 +20,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 
 import org.json.JSONArray;
@@ -28,13 +28,7 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.e2echatapp.api.contacts.getContactNickname;
-
 public class notificationService extends Service {
-
-    private static final String TAG = "notificationService";
-    private static List<String> senders = new ArrayList<>();
-
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -43,18 +37,22 @@ public class notificationService extends Service {
 
     @Override
     public void onCreate() {
-        Log.d(TAG, "created");
 
         //Receiver <- Sender conversation direction
         DatabaseReference conversation = FirebaseDatabase.getInstance()
                 .getReference("unreadMessagesFromUsers")
                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
+        //add to the users conversation a child event listener
         conversation.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 try {
+                    //convert the available childs in the firebase conversation to JSONArray
                     JSONArray data = new JSONArray(new Gson().toJson(snapshot.getValue(Object.class)));
+
+                    //for the available children in the conversation
+                    //if the ID is in the users' contact list, deploy a notification
                     for(int i=0; i<data.length(); i++) {
                         String contactNickname = getContactNickname(notificationService.this, data.getJSONObject(i).getString("sender"));
                         if (contactNickname != null) {
